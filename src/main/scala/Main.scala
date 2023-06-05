@@ -1,44 +1,35 @@
-import org.apache.kafka.clients.consumer.ConsumerConfig
-import org.apache.kafka.common.serialization.StringDeserializer
-import org.apache.spark.SparkConf
-import org.apache.spark.streaming.{Seconds, StreamingContext}
-import org.apache.spark.streaming.kafka010.{ConsumerStrategies, KafkaUtils, LocationStrategies}
-
-import org.apache.spark.sql.functions._
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.streaming.StreamingQuery
 
 object Main {
   def main(args: Array[String]): Unit = {
+    // Simple REPL
 
-    // Create spark session
-    val spark = SparkSession
-      .builder
-      .appName("Spark Structured Streaming from Kafka")
-      .master("local[*]")
-      .getOrCreate()
+    println("Type 'start' to start the streaming query")
 
-    // Turn off logs
-    spark.sparkContext.setLogLevel("OFF")
+    var query: StreamingQuery = null
 
-    import spark.implicits._
+    while (true){
+      val input = scala.io.StdIn.readLine()
+      if (input == "exit"){
+        System.exit(0)
+      }
+      else if (input == "start"){
+        val dsw = StreamingHandler.init()
+        query = dsw.start()
 
-    val lines = spark
-      .readStream
-      .format("kafka")
-      .option("kafka.bootstrap.servers", "localhost:9092")
-      .option("subscribe", "ccers")
-      .load()
+        // Thread
+        val thread = new Thread(() => {
+          StreamingHandler.run(query)
+        })
 
-    val words = lines.select(explode(split($"value", " ")).as("word"))
-
-    val wordCounts = words.groupBy("word").count()
-
-    val query = wordCounts.writeStream
-      .outputMode("complete")
-      .format("console")
-      .start()
-
-
-    query.awaitTermination()
+        thread.start()
+      }
+      else if (input == "stop"){
+        query.stop()
+      }
+      else{
+        println("Type 'start' to start the streaming query")
+      }
+    }
   }
 }

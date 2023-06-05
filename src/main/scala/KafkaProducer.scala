@@ -13,10 +13,10 @@ object KafkaProducer {
 
       val topic = "ccers"
 
-      for (i <- 1 to 50) {
-        val record = new ProducerRecord(topic, "key", s"hello $i")
-        producer.send(record)
-      }
+      val entry = ProducerEntry("Joh2n","SDfsdf", "abide", 0, 1)
+
+      val record = new ProducerRecord[String, String](topic, entry.toString)
+      producer.send(record)
 
       producer.close()
   }
