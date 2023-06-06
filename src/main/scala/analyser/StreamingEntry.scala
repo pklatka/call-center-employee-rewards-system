@@ -1,4 +1,9 @@
-case class ProducerEntry(id: String = "abide",
+package analyser
+
+/*
+* StreamingEntry is a case class that represents the data that is being processed.
+*/
+case class StreamingEntry(id: String = "abide",
                          name: String = "John",
                          surname: String = "Lennon",
                          numberOfCalls: Int = 0,
@@ -8,16 +13,15 @@ case class ProducerEntry(id: String = "abide",
   }
 
   def toTuple: (String, String, String, Int, Int) = {
-    (name, surname, id, numberOfCalls, totalSales)
+    (id, name, surname, numberOfCalls, totalSales)
   }
 }
 
-object ProducerEntry {
+object StreamingEntry {
   def getColumns: List[String] = {
     var columns = List[String]()
-    var entry = ProducerEntry()
 
-    entry.getClass.getDeclaredFields foreach { f =>
+    StreamingEntry().getClass.getDeclaredFields foreach { f =>
       f.setAccessible(true)
       columns = columns :+ f.getName.capitalize
     }
@@ -27,9 +31,8 @@ object ProducerEntry {
 
   def getGroupByColumns: List[String] = {
     var columns = List[String]()
-    var entry = ProducerEntry()
 
-    entry.getClass.getDeclaredFields foreach { f =>
+    StreamingEntry().getClass.getDeclaredFields foreach { f =>
       f.setAccessible(true)
       if (f.getName != "numberOfCalls" && f.getName != "totalSales") {
         columns = columns :+ f.getName.capitalize
@@ -39,16 +42,8 @@ object ProducerEntry {
     columns
   }
 
-  def parseFromString(str: String): ProducerEntry = {
+  def parseFromString(str: String): StreamingEntry = {
     val fields = str.split(",")
-    ProducerEntry(fields(0), fields(1), fields(2), fields(3).toInt, fields(4).toInt)
-  }
-
-  def main(args: Array[String]): Unit = {
-    var x = ProducerEntry.getColumns
-
-    for (i <- x) {
-      println(i)
-    }
+    StreamingEntry(fields(0), fields(1), fields(2), fields(3).toInt, fields(4).toInt)
   }
 }
