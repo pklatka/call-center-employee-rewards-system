@@ -1,8 +1,8 @@
-case class ProducerEntry(name: String = "John",
-                         surname:String = "Lennon",
-                         id: String = "abide",
+case class ProducerEntry(id: String = "abide",
+                         name: String = "John",
+                         surname: String = "Lennon",
                          numberOfCalls: Int = 0,
-                         totalSales: Int = 0){
+                         totalSales: Int = 0) {
   override def toString: String = {
     this.getClass.getDeclaredFields.map(_.get(this)).mkString(",")
   }
@@ -12,7 +12,7 @@ case class ProducerEntry(name: String = "John",
   }
 }
 
-object ProducerEntry{
+object ProducerEntry {
   def getColumns: List[String] = {
     var columns = List[String]()
     var entry = ProducerEntry()
@@ -31,7 +31,7 @@ object ProducerEntry{
 
     entry.getClass.getDeclaredFields foreach { f =>
       f.setAccessible(true)
-      if (f.getName != "numberOfCalls" && f.getName != "totalSales"){
+      if (f.getName != "numberOfCalls" && f.getName != "totalSales") {
         columns = columns :+ f.getName.capitalize
       }
     }
@@ -47,7 +47,7 @@ object ProducerEntry{
   def main(args: Array[String]): Unit = {
     var x = ProducerEntry.getColumns
 
-    for (i <- x){
+    for (i <- x) {
       println(i)
     }
   }

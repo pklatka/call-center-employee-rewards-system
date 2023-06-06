@@ -1,13 +1,15 @@
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.spark.SparkConf
+import org.apache.spark.sql.expressions.Window
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 import org.apache.spark.streaming.kafka010.{ConsumerStrategies, KafkaUtils, LocationStrategies}
 import org.apache.spark.sql.functions._
-import org.apache.spark.sql.streaming.StreamingQuery
-import org.apache.spark.sql.{ForeachWriter, SparkSession}
+import org.apache.spark.sql.streaming.{DataStreamWriter, StreamingQuery}
+import org.apache.spark.sql.{ForeachWriter, Row, SparkSession}
 
 object StreamingHandler {
+  private val totalSalesPercentage = 0.1
 
     // Create spark session
     private val spark = SparkSession
@@ -40,9 +42,9 @@ object StreamingHandler {
       .withColumnRenamed("sum(NumberOfCalls)", "NumberOfCalls")
       .withColumnRenamed("sum(TotalSales)", "TotalSales")
 
-  def init() = {
+  def init(): DataStreamWriter[Row] = {
     val dfw = df.writeStream
-      .queryName("aggregates") // this query name will be the table name
+      .queryName("results") // this query name will be the table name
       .outputMode("complete")
       .format("memory")
 
@@ -53,25 +55,47 @@ object StreamingHandler {
     println("Streaming query started")
     query.awaitTermination()
 
-    // Here return result of the best seller
+    // Get the results
+    val results = spark.sql("select * from results")
 
-    /*
-    * 1. Get old ranking from csv file
-    * 2. Update ranking
-    * 3. Calculate bonus for each seller (considering previous statistics)
-    * 4. Write result to separate csv file
-    * */
+    // Calculate base bonus (round to 2 decimal places)
+    var resultsWithBonus = results.withColumn("BaseBonus", round($"TotalSales" * totalSalesPercentage, 2))
 
-    // Get the first 10 rows
-    val results = spark.sql("select * from aggregates")
-    results.show(10)
+    // Enumerate rows
+    resultsWithBonus = resultsWithBonus.withColumn("row_number", row_number().over(Window.orderBy($"TotalSales".desc)))
+
+    // Calculate bonus for top 5 employees and update the results for this 5 employees only
+    var bonusPool = List(0.55, 0.25, 0.1, 0.07, 0.03)
+    val prizePool = 1000
+
+    bonusPool = bonusPool.map(x => x * prizePool)
+
+    val numRowsToUpdate = bonusPool.size
+
+    // UDF (User-Defined Function) to retrieve array elements based on row numbers
+    val getBonus = udf((rowNum: Int) => bonusPool(rowNum - 1))
+
+    resultsWithBonus = resultsWithBonus.withColumn("BaseBonus",
+      when(col("row_number") <= numRowsToUpdate,
+        round(col("BaseBonus") + getBonus(col("row_number")), 2)
+      )
+        .otherwise(col("BaseBonus"))
+    )
+
+    // Remove row_number column
+    resultsWithBonus = resultsWithBonus.drop("row_number")
+
+    // Write results to console
+    resultsWithBonus.show()
 
     // Write results to existing csv file
-    results.coalesce(1)
+    val csvFileName = s"results-${java.time.LocalDate.now.toString}.csv"
+
+    resultsWithBonus.coalesce(1)
       .write
       .mode("append")
       .option("header", "true")
-      .csv("src/main/output/result.csv")
+      .csv(s"src/main/output/$csvFileName")
 
     // Stop spark session
     spark.stop()
