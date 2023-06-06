@@ -1,6 +1,6 @@
 package client
 
-import analyser.StreamingEntry
+import streaming.StreamingEntry
 import org.apache.kafka.clients.producer._
 import settings.StreamingSettings
 

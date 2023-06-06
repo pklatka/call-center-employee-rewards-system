@@ -1,4 +1,4 @@
-import analyser.StructuredStreamingEngine
+import streaming.StructuredStreamingEngine
 import org.apache.spark.sql.streaming.StreamingQuery
 
 /**

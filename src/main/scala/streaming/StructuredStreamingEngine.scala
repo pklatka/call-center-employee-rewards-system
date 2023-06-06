@@ -1,4 +1,4 @@
-package analyser
+package streaming
 
 import org.apache.spark.sql.expressions.Window
 import org.apache.spark.sql.functions._

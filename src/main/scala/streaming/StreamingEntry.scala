@@ -1,4 +1,4 @@
-package analyser
+package streaming
 
 /*
 * StreamingEntry is a case class that represents the data that is being processed.
