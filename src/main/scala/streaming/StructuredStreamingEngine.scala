@@ -71,16 +71,16 @@ object StructuredStreamingEngine {
     val results = spark.sql("select * from results")
 
     // Calculate base bonus (round to 2 decimal places)
-    var resultsWithBonus = results.withColumn("BaseBonus", round($"TotalSales" * BonusSettings.TOTAL_SALES_BONUS_PERCENTAGE, 2))
+    var resultsWithBonus = results.withColumn("Bonus", round($"TotalSales" * BonusSettings.TOTAL_SALES_BONUS_PERCENTAGE, 2))
 
     // Enumerate rows
     resultsWithBonus = resultsWithBonus.withColumn("row_number", row_number().over(Window.orderBy($"TotalSales".desc)))
 
-    resultsWithBonus = resultsWithBonus.withColumn("BaseBonus",
+    resultsWithBonus = resultsWithBonus.withColumn("Bonus",
       when(col("row_number") <= BonusSettings.ADDITIONAL_BONUS_POOL_SIZE,
-        round(col("BaseBonus") + BonusSettings.getAdditionalBonusUDF(col("row_number")), 2)
+        round(col("Bonus") + BonusSettings.getAdditionalBonusUDF(col("row_number")), 2)
       )
-        .otherwise(col("BaseBonus"))
+        .otherwise(col("Bonus"))
     )
 
     // Remove row_number column
