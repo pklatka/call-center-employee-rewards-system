@@ -70,6 +70,9 @@ object StructuredStreamingEngine {
     // Get the results
     val results = spark.sql("select * from results")
 
+    // Round TotalSales to 2 decimal places
+    results.withColumn("TotalSales", round($"TotalSales", 2))
+
     // Calculate base bonus (round to 2 decimal places)
     var resultsWithBonus = results.withColumn("Bonus", round($"TotalSales" * BonusSettings.TOTAL_SALES_BONUS_PERCENTAGE, 2))
 

@@ -25,13 +25,15 @@ object ClientConsole {
 
     val producer = new KafkaProducer[String, String](props)
 
+    val inputHandler = InputHandler()
+
     // Prompting for employee data
     println("Enter your ID:")
-    val id = validateID("ID")
+    val id = inputHandler.idInput(InputIDType.ID)
     println("Enter your first name:")
-    val firstName = validateName("first name")
+    val firstName = inputHandler.nameInput(InputNameType.FIRST_NAME)
     println("Enter your last name:")
-    val lastName = validateName("last name")
+    val lastName = inputHandler.nameInput(InputNameType.LAST_NAME)
 
     help()
 
@@ -44,16 +46,15 @@ object ClientConsole {
           // Enter client data
           // It may be useful when there is a need to persist the order data
           println("Enter clients first name:")
-          val clientFirstName = validateName("client first name")
+          val clientFirstName = inputHandler.nameInput(InputNameType.CLIENT_FIRST_NAME)
           println("Enter clients last name:")
-          val clientLastName = validateName("client last name")
+          val clientLastName = inputHandler.nameInput(InputNameType.CLIENT_LAST_NAME)
           println("Enter clients e-mail address:")
-          val clientEmail = validateEmail("client email")
+          val clientEmail = inputHandler.emailInput(InputEmailType.EMAIL)
           println("Enter order description:")
           val orderDescription = scala.io.StdIn.readLine()
           println("Enter order value:")
-          val orderValue = validateValue("order value")
-          println(orderValue)
+          val orderValue = inputHandler.valueInput(InputValueType.ORDER_VALUE)
 
           // Assign order value to given employee
           val entry = StreamingEntry(id, firstName, lastName, 1, orderValue)
@@ -73,58 +74,5 @@ object ClientConsole {
     }
   }
 
-  @tailrec
-  private def validateValue(fieldName: String): Double = {
-    val userInput = scala.io.StdIn.readLine().trim
-    val value = Try(userInput.toDouble)
 
-    value match {
-      case scala.util.Success(value) if value > 0 =>
-        BigDecimal(value).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
-      case _ =>
-        println(s"Invalid $fieldName. Please enter a non-negative value.")
-        validateValue(fieldName)
-    }
-  }
-
-  @tailrec
-  private def validateName(fieldName: String): String = {
-    val userInput = scala.io.StdIn.readLine()
-    val name = userInput.trim().toLowerCase().capitalize.replaceAll("""[\p{Punct}]""", "")
-    val nameRegex = """^[A-Z][a-z]+$""".r
-    name match {
-      case nameRegex() => name
-      case _ =>
-        println(s"Invalid $fieldName. Please enter a valid.")
-        // Prompt again until a valid input is provided
-        validateName(fieldName)
-    }
-  }
-
-  @tailrec
-  private def validateID(fieldName: String): String = {
-    val userInput = scala.io.StdIn.readLine()
-    val id = userInput.trim().toUpperCase().replaceAll("""[\p{Punct}]""", "")
-    val IDRegex = """^[A-Z]+$""".r
-    id match {
-      case IDRegex() => id
-      case _ =>
-        println(s"Invalid $fieldName. Please enter a valid.")
-        // Prompt again until a valid input is provided
-        validateID(fieldName)
-    }
-  }
-
-  @tailrec
-  private def validateEmail(fieldName: String): String = {
-    val email = scala.io.StdIn.readLine()
-    val emailRegex = """^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$""".r
-    email match {
-      case emailRegex() => email
-      case _ =>
-        println(s"Invalid $fieldName. Please enter a valid email address.")
-        // Prompt again until a valid input is provided
-        validateEmail(fieldName)
-    }
-  }
 }
