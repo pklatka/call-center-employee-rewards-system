@@ -27,7 +27,6 @@ object InputEmailType extends Enumeration {
 }
 
 case class InputHandler() {
-
   @tailrec
   final def valueInput(fieldType: InputValueType.InputValueType): Double = {
     val userInput = scala.io.StdIn.readLine().trim

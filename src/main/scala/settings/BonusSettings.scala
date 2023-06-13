@@ -7,10 +7,10 @@ import org.apache.spark.sql.functions.udf
  * BonusSettings contains all the settings for the bonus calculation.
  */
 object BonusSettings {
-  val TOTAL_SALES_BONUS_PERCENTAGE = 0.1 // The percentage of the total sales that is used for the bonus calculation (for all employees)
-  private val ADDITIONAL_BONUS_POOL = 1000 // The pool of money that is used for the additional bonus
-  private val ADDITIONAL_BONUS_PERCENTAGES = List(0.55, 0.25, 0.1, 0.07, 0.03) // The percentages of the additional bonus pool for each place in the ranking
-  private val ADDITIONAL_BONUS_VALUES = ADDITIONAL_BONUS_PERCENTAGES.map(x => x * ADDITIONAL_BONUS_POOL)
+  val TOTAL_SALES_BONUS_PERCENTAGE: Double = 0.1 // The percentage of the total sales that is used for the bonus calculation (for all employees)
+  private val ADDITIONAL_BONUS_POOL: Double = 1000.0 // The pool of money that is used for the additional bonus
+  private val ADDITIONAL_BONUS_PERCENTAGES: List[Double] = List(0.55, 0.25, 0.1, 0.07, 0.03) // The percentages of the additional bonus pool for each place in the ranking
+  private val ADDITIONAL_BONUS_VALUES: List[Double] = ADDITIONAL_BONUS_PERCENTAGES.map(x => x * ADDITIONAL_BONUS_POOL)
   val ADDITIONAL_BONUS_POOL_SIZE: Int = ADDITIONAL_BONUS_VALUES.size
 
   /*

@@ -100,7 +100,7 @@ object StructuredStreamingEngine {
 
     resultsWithBonus.coalesce(1)
       .write
-      .mode("append")
+      .mode("overwrite")
       .option("header", "true")
       .csv(s"output/$csvFileName")
 

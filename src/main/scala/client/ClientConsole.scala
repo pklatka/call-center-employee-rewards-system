@@ -5,9 +5,10 @@ import settings.StreamingSettings
 import streaming.StreamingEntry
 
 import java.util.Properties
-import scala.annotation.tailrec
-import scala.util.Try
 
+/*
+ * ClientConsole contains all the logic for the client console.
+ */
 object ClientConsole {
   private def help(): Unit = {
     println("Available commands:")
@@ -73,6 +74,4 @@ object ClientConsole {
       }
     }
   }
-
-
 }
